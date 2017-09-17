@@ -57,9 +57,12 @@ private slots:
 	void open();
     //保存图片至文件夹
 	void saveAs();
-    //refine操作
+    //打开新的workshop window
+    void newWin();
+    //自动抠图操作refine
     void triggerrefineOnce();
-
+    //打开相册
+    void openGallery();
 
 	void triggerEditAct(QAction* act);
 	void triggerViewAct(QAction* act);
@@ -100,7 +103,10 @@ private:
     // fileName;
     QString mfileName;
     //高级添加
+    QAction *mNewAct;
     QAction *mMagicAct;
+    QAction *mMagicActplus;
+    QAction *mGalleyAct;
 	// view menu
 	QMenu *mViewMenu;
 	QAction *mViewToolBarAct;

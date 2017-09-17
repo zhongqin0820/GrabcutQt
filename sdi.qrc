@@ -4,7 +4,15 @@
     <file>images/cut.png</file>
     <file>images/new.png</file>
     <file>images/open.png</file>
-    <file>images/paste.png</file>
+    <file>images/paste.png</file>	
+	<file>images/magic.png</file>
     <file>images/save.png</file>
+	<file>gallery/1.jpeg</file>
+	<file>gallery/2.jpeg</file>
+	<file>gallery/3.jpeg</file>
+	<file>gallery/4.jpeg</file>
+	<file>gallery/5.jpeg</file>
+	<file>gallery/6.jpeg</file>
+	<file>gallery/7.jpeg</file>
 </qresource>
 </RCC>

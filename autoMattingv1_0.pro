@@ -34,14 +34,16 @@ HEADERS += ./mainwindow.h \
     ./Global.h \
     ./GMM.h \
     ./GrabCut.h \
-    ./Image.h
+    ./Image.h \
+    gallerywindow.h
 SOURCES += ./main.cpp \
     ./mainwindow.cpp \
     ./maxflow/adjacency_list/graph.cpp \
     ./maxflow/adjacency_list/maxflow.cpp \
     ./Color.cpp \
     ./GMM.cpp \
-    ./GrabCut.cpp
+    ./GrabCut.cpp \
+    gallerywindow.cpp
 #system mirror files
 RESOURCES += sdi.qrc
 #added opencv dependency

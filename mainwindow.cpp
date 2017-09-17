@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include "gallerywindow.h"
+#include <QWidget>
 #include <QtGui>
 #include <ctime>
 #include <string>
@@ -109,7 +111,7 @@ MainWindow::~MainWindow()
 {
 }
 
-
+//真正的初始化函数，由MainWindow调用！
 void MainWindow::init()
 {
 	srand((unsigned int)time(0));
@@ -122,7 +124,6 @@ void MainWindow::init()
 
 	initParameters();
 }
-
 
 //初始化系统,打开文件后重新初始化
 void MainWindow::initSystem()
@@ -157,24 +158,27 @@ void MainWindow::initParameters()
     }
 }
 
+//初始化系统的UI
 void MainWindow::setupUi()
 {
 	mImgView = new QWidget;
 	mImgView->setObjectName(WIDGET_NAME);
 	this->setCentralWidget(mImgView);
 	mImgView->installEventFilter(this);
-    this->layout()->setSizeConstraint(QLayout::SetFixedSize);
-//    this->layout()->setSizeConstraint(QLayout::SetMaximumSize);
+//    this->layout()->setSizeConstraint(QLayout::SetFixedSize);
+    this->layout()->setSizeConstraint(QLayout::SetMaximumSize);
 	mProgressBar = new QProgressBar(this);
 
 	setWindowTitle(WINDOW_TITLE);
 }
 
+//返回图片的尺寸
 QSize MainWindow::sizeHint() const
 {
 	return mImages[VM_IMAGE].size();
 }
 
+//添加UI
 void MainWindow::createActions()
 {
 	// file menu
@@ -192,13 +196,29 @@ void MainWindow::createActions()
     mQuitAct->setShortcut(QKeySequence::Quit);
 	mQuitAct->setToolTip(tr("Exit the application"));
 	connect(mQuitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
-    // plus menu
+
+    // plus edit menu
+    mNewAct = new QAction(QIcon(":/images/new.png"), tr("&New Obj..."), this);
+//    mNewAct->setShortcut(QKeySequence::Open);
+    mNewAct->setToolTip(tr("New an image file"));
+    connect(mNewAct, SIGNAL(triggered()), this, SLOT(newWin()));
+
     mMagicAct = new QAction(QIcon(":/images/cut.png"), tr("&Magic Refine..."), this);
     mMagicAct->setShortcut(tr("Ctrl+R"));
     mMagicAct->setToolTip(tr("Magic an image file"));
     connect(mMagicAct, SIGNAL(triggered()), this, SLOT(triggerrefineOnce()));
 
-	// edit menu
+    mMagicActplus = new QAction(QIcon(":/images/magic.png"), tr("&Magic Refine plus..."), this);
+    mMagicActplus->setShortcut(tr("Ctrl+R"));
+    mMagicActplus->setToolTip(tr("Magic an image file plus"));
+    connect(mMagicActplus, SIGNAL(triggered()), this, SLOT(triggerrefineOnce()));
+
+    mGalleyAct = new QAction(QIcon(":/images/paste.png"), tr("&New Window Gallery..."), this);
+    mGalleyAct->setShortcut(tr("Ctrl+N"));
+    mGalleyAct->setToolTip(tr("Create Gallery Window"));
+    connect(mGalleyAct, SIGNAL(triggered()), this, SLOT(openGallery()));
+
+    // edit menu
 	mViewModeGroup = new QActionGroup(this);
 	mViewModeGroup->setExclusive(true);
 	for (int i=0; i<VM_MAX; ++i)
@@ -225,34 +245,32 @@ void MainWindow::createActions()
 		mViewModeGroup->addAction(mViewModeActs[i]);
 	}
     mViewModeActs[VM_IMAGE]->setChecked(true);//默认是进入Image菜单栏(未编辑时)
-    //屏蔽其它功能.
     for(int i=0;i<VM_MAX;++i){
         mViewModeActs[i]->setVisible(false);
     }
 	connect(mViewModeGroup, SIGNAL(triggered(QAction*)), this, SLOT(changeViewModeAct(QAction*)));
-//不同的编辑操作,快捷键形式
 
+    //其他操作，不同的编辑操作,快捷键形式
 	mRefineAct = new QAction(tr("Refine"), this);
 	mRefineAct->setToolTip(tr("Run GrabCut refinement"));
-//运行细化一次
+    //运行细化一次
     mRefineOnceAct = new QAction(tr("Refine Once"), this);
 	mRefineOnceAct->setToolTip(tr("Run one step of GrabCut refinement"));
 	mRefineOnceAct->setShortcut(tr("Ctrl+R"));
 
-
 	mFitGMMsAct = new QAction(tr("Fit GMMs"), this);
 	mFitGMMsAct->setToolTip(tr("Run the Orchard-Bowman GMM clustering"));
-//取消细化
+    //取消细化
 	mAbortRefiningAct = new QAction(tr("Abort"), this);
 	mAbortRefiningAct->setToolTip(tr("Stop refining that is running"));
 	mAbortRefiningAct->setShortcut(tr("Ctrl+C"));
-//是否显示掩膜
+    //是否显示掩膜
 	mShowMaskAct = new QAction(tr("Show Mask"), this);
 	mShowMaskAct->setToolTip(tr("Show alpha mask of the segmentation"));
 	mShowMaskAct->setCheckable(true);
 	mShowMaskAct->setChecked(mShowMask);
 	mShowMaskAct->setShortcut(tr("Ctrl+M"));
-//每一次画笔修改,都会更新图片
+    //每一次画笔修改,都会更新图片
 	mEditActGroup = new QActionGroup(this);
 	mEditActGroup->setExclusive(false);
 	mEditActGroup->addAction(mRefineAct);
@@ -274,7 +292,6 @@ void MainWindow::createActions()
 	mInfoToolBarAct->setCheckable(true);
     mInfoToolBarAct->setChecked(true);
 	mInfoToolBarAct->setShortcut(tr("Ctrl+I"));
-
 
 	mViewActGroup = new QActionGroup(this);
 	mViewActGroup->addAction(mViewToolBarAct);
@@ -338,6 +355,7 @@ void MainWindow::triggerViewAct(QAction *act)
 	}
 }
 
+//更新操作后的各视图
 void MainWindow::changeViewModeAct(QAction* act)
 {
 	for (int i=0; i<VM_MAX; ++i)
@@ -351,16 +369,20 @@ void MainWindow::changeViewModeAct(QAction* act)
 	}
 }
 
+//创建菜单
 void MainWindow::createMenus()
 {
 	mFileMenu = menuBar()->addMenu(tr("&File"));
 	mFileMenu->addAction(mOpenAct);
 	mFileMenu->addAction(mSaveAsImageAct);
-    mFileMenu->addAction(mMagicAct);
+    mFileMenu->addAction(mNewAct);
+//    mFileMenu->addAction(mMagicAct);
+//    mFileMenu->addAction(mMagicActplus);
 	mFileMenu->addSeparator();
 	mFileMenu->addAction(mQuitAct);
     mFileMenu->addAction(mMagicAct);
-	
+    mFileMenu->addAction(mMagicActplus);
+    mFileMenu->addAction(mGalleyAct);
 	menuBar()->addSeparator();
 
 	mViewMenu = menuBar()->addMenu(tr("&View"));
@@ -388,15 +410,19 @@ void MainWindow::createMenus()
 	mHelpMenu->addAction(mAboutQtAct);
 }
 
+//创建工具拦：文件、编辑
 void MainWindow::createToolBars()
 {
 	// file toolbar
 	mFileToolBar = addToolBar(tr("File"));
 	mFileToolBar->addAction(mOpenAct);
 	mFileToolBar->addAction(mSaveAsImageAct);
-    mFileToolBar->addAction(mMagicAct);
+    mFileToolBar->addAction(mNewAct);
 	// edit toolbar
 	mEditToolBar = addToolBar(tr("Edit"));
+    mEditToolBar->addAction(mMagicAct);
+    mEditToolBar->addAction(mMagicActplus);
+    mEditToolBar->addAction(mGalleyAct);
 	for (int i=0; i<VM_MAX; ++i)
 	{
 		mEditToolBar->addAction(mViewModeActs[i]);
@@ -420,6 +446,7 @@ void MainWindow::createToolBars()
 	updateInformationBar();
 }
 
+//加载进度条
 void MainWindow::createStatusBar()
 {
 	statusBar()->addWidget(mProgressBar);
@@ -464,6 +491,7 @@ void MainWindow::open()
 			.arg(WINDOW_TITLE) );
 	}
 }
+
 //保存文件
 void MainWindow::saveAs()
 {
@@ -474,6 +502,15 @@ void MainWindow::saveAs()
         tr("Save Result"), fileName1,tr("Images (*.png *.jpg *.bmp)"));
 	saveAsImageFile(fileName);
 }
+//打开新的workshop window
+void MainWindow::newWin()
+{
+    MainWindow *nw = new MainWindow();
+    nw->show();
+    nw->resize(800,600);
+    this->update();
+}
+
 //触发refineOnce
 void MainWindow::triggerrefineOnce(){
     if (mImages[VM_IMAGE].isNull()){
@@ -496,6 +533,16 @@ void MainWindow::triggerrefineOnce(){
     updateImages();
     mImgView->update();
     updateInformationBar();
+}
+
+//打开相册
+void MainWindow::openGallery()
+{
+    cout<<"openGallery()"<<endl;
+    GalleryWindow *g = new GalleryWindow();
+    g->show();
+    g->resize(800,600);
+    this->update();
 }
 
 //打开图像
@@ -658,6 +705,7 @@ QString MainWindow::strippedName(const QString& fullFileName)
 	return QFileInfo(fullFileName).fileName();
 }
 
+//更新信息(暂时无用)
 void MainWindow::updateInformationBar()
 {
 	QString info = tr("<style type='text/css'><!--"

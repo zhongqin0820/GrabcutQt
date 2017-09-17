@@ -2,4 +2,5 @@
 .DS_Store
 test_set/
 res_set/
-
+sp_resset/
+sp_testset/
