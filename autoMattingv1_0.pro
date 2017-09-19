@@ -35,7 +35,8 @@ HEADERS += ./mainwindow.h \
     ./GMM.h \
     ./GrabCut.h \
     ./Image.h \
-    gallerywindow.h
+    gallerywindow.h \
+    clicklabel.h
 SOURCES += ./main.cpp \
     ./mainwindow.cpp \
     ./maxflow/adjacency_list/graph.cpp \
@@ -43,7 +44,8 @@ SOURCES += ./main.cpp \
     ./Color.cpp \
     ./GMM.cpp \
     ./GrabCut.cpp \
-    gallerywindow.cpp
+    gallerywindow.cpp \
+    clicklabel.cpp
 #system mirror files
 RESOURCES += sdi.qrc
 #added opencv dependency
@@ -57,4 +59,4 @@ LIBS += -L/usr/local/lib \
  -lopencv_imgproc \
 
 DISTFILES +=
-CONFIG +=console
+#CONFIG +=console

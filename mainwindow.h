@@ -59,6 +59,8 @@ private slots:
 	void saveAs();
     //打开新的workshop window
     void newWin();
+    //重新开始绘制抠图！
+    void redoImage();
     //自动抠图操作refine
     void triggerrefineOnce();
     //打开相册
@@ -98,6 +100,7 @@ private:
 	// file menu
 	QMenu *mFileMenu;
 	QAction *mOpenAct;
+    QAction *mRedoAct;
 	QAction *mQuitAct;
 	QAction *mSaveAsImageAct;
     // fileName;

@@ -7,6 +7,7 @@
     <file>images/paste.png</file>	
 	<file>images/magic.png</file>
     <file>images/save.png</file>
+    <file>images/redologo.png</file>
 	<file>gallery/1.jpeg</file>
 	<file>gallery/2.jpeg</file>
 	<file>gallery/3.jpeg</file>
@@ -14,5 +15,10 @@
 	<file>gallery/5.jpeg</file>
 	<file>gallery/6.jpeg</file>
 	<file>gallery/7.jpeg</file>
+	<file>gallery/8.jpeg</file>
+	<file>gallery/9.jpeg</file>
+	<file>gallery/10.jpeg</file>
+	<file>gallery/11.jpeg</file>
+	<file>gallery/12.jpeg</file>
 </qresource>
 </RCC>

@@ -140,7 +140,7 @@ void MainWindow::initSystem()
 	mImgMask.fill(0);
 }
 
-//初始化一些参量
+//初始化一些参量,修改mImgView的大小
 void MainWindow::initParameters()
 {
 	mViewMode = VM_IMAGE;
@@ -158,15 +158,15 @@ void MainWindow::initParameters()
     }
 }
 
-//初始化系统的UI
+//初始化系统的UI，此处修改窗口大小
 void MainWindow::setupUi()
 {
 	mImgView = new QWidget;
 	mImgView->setObjectName(WIDGET_NAME);
 	this->setCentralWidget(mImgView);
 	mImgView->installEventFilter(this);
-//    this->layout()->setSizeConstraint(QLayout::SetFixedSize);
-    this->layout()->setSizeConstraint(QLayout::SetMaximumSize);
+    this->layout()->setSizeConstraint(QLayout::SetFixedSize);
+//    this->layout()->setSizeConstraint(QLayout::SetMaximumSize);
 	mProgressBar = new QProgressBar(this);
 
 	setWindowTitle(WINDOW_TITLE);
@@ -178,7 +178,7 @@ QSize MainWindow::sizeHint() const
 	return mImages[VM_IMAGE].size();
 }
 
-//添加UI
+//添加UI、editGroup显示其他中间结果：line 257
 void MainWindow::createActions()
 {
 	// file menu
@@ -196,6 +196,11 @@ void MainWindow::createActions()
     mQuitAct->setShortcut(QKeySequence::Quit);
 	mQuitAct->setToolTip(tr("Exit the application"));
 	connect(mQuitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
+
+    mRedoAct = new QAction(QIcon(":/images/redologo.png"), tr("&Redo Obj..."), this);
+//	mRedoAct->setShortcut(QKeySequence::Open);
+    mRedoAct->setToolTip(tr("Redo an image file"));
+    connect(mRedoAct, SIGNAL(triggered()), this, SLOT(redoImage()));
 
     // plus edit menu
     mNewAct = new QAction(QIcon(":/images/new.png"), tr("&New Obj..."), this);
@@ -230,7 +235,8 @@ void MainWindow::createActions()
             name += "Image";
 			break;
 		case VM_GMM_MASK:
-			name += "GMM mask";
+//			name += "GMM mask";
+            name += "显著";
 			break;
 		case VM_NLINK_MASK:
 			name += "NLink mask";
@@ -248,6 +254,7 @@ void MainWindow::createActions()
     for(int i=0;i<VM_MAX;++i){
         mViewModeActs[i]->setVisible(false);
     }
+    mViewModeActs[1]->setVisible(true);
 	connect(mViewModeGroup, SIGNAL(triggered(QAction*)), this, SLOT(changeViewModeAct(QAction*)));
 
     //其他操作，不同的编辑操作,快捷键形式
@@ -376,8 +383,7 @@ void MainWindow::createMenus()
 	mFileMenu->addAction(mOpenAct);
 	mFileMenu->addAction(mSaveAsImageAct);
     mFileMenu->addAction(mNewAct);
-//    mFileMenu->addAction(mMagicAct);
-//    mFileMenu->addAction(mMagicActplus);
+    mFileMenu->addAction(mRedoAct);
 	mFileMenu->addSeparator();
 	mFileMenu->addAction(mQuitAct);
     mFileMenu->addAction(mMagicAct);
@@ -410,7 +416,7 @@ void MainWindow::createMenus()
 	mHelpMenu->addAction(mAboutQtAct);
 }
 
-//创建工具拦：文件、编辑
+//创建工具拦：文件、编辑、显示其他中间结果
 void MainWindow::createToolBars()
 {
 	// file toolbar
@@ -418,6 +424,7 @@ void MainWindow::createToolBars()
 	mFileToolBar->addAction(mOpenAct);
 	mFileToolBar->addAction(mSaveAsImageAct);
     mFileToolBar->addAction(mNewAct);
+    mFileToolBar->addAction(mRedoAct);
 	// edit toolbar
 	mEditToolBar = addToolBar(tr("Edit"));
     mEditToolBar->addAction(mMagicAct);
@@ -430,6 +437,7 @@ void MainWindow::createToolBars()
 
 	// information toolbar
 	mInfoToolBar = addToolBar(tr("Information"));
+//    显示其他中间结果
     mInfoToolBar->setVisible(false);
 	addToolBar(Qt::RightToolBarArea, mInfoToolBar);
 
@@ -470,10 +478,11 @@ void MainWindow::updateImages()
 //打开文件
 void MainWindow::open()
 {
-    string folerName = "/Users/Zoking/Documents/WorkSpace/QTworkspace/project1/autoMattingv1_0/test_set";
+    string folerName = "/Users/Zoking/Documents/WorkSpace/QTworkspace/project1/autoMattingv1_0/test";
 	QString fileName = QFileDialog::getOpenFileName(this,
         tr("Open Obj Model"), folerName.c_str(), tr("Image Files (*.bmp *.png *.jpg *.jpeg *.tiff)"));
-    mfileName = fileName.mid(folerName.length(),fileName.indexOf(".")-folerName.length());
+    mfileName = fileName.mid(folerName.length()+1,fileName.indexOf(".")-folerName.length()-1);
+    cout<<"打开的图片："<<mfileName.toStdString().data()<<endl;
     if (!fileName.isEmpty())
 	{
 		openImage(fileName);
@@ -495,13 +504,14 @@ void MainWindow::open()
 //保存文件
 void MainWindow::saveAs()
 {
-    string folerName = "/Users/Zoking/Documents/WorkSpace/QTworkspace/project1/autoMattingv1_0/res_set";
+    string folerName = "/Users/Zoking/Documents/WorkSpace/QTworkspace/project1/autoMattingv1_0/res/";
     QString fileName1 = QString(folerName.c_str()) + mfileName;
 
 	QString fileName = QFileDialog::getSaveFileName(this, 
-        tr("Save Result"), fileName1,tr("Images (*.png *.jpg *.bmp)"));
+        tr("Save Result"), fileName1,tr("Images (*.png *.jpg *.bmp *.jpeg)"));
 	saveAsImageFile(fileName);
 }
+
 //打开新的workshop window
 void MainWindow::newWin()
 {
@@ -509,6 +519,29 @@ void MainWindow::newWin()
     nw->show();
     nw->resize(800,600);
     this->update();
+}
+
+//重新开始绘制抠图！
+void MainWindow::redoImage()
+{
+    string folerName = "/Users/Zoking/Documents/WorkSpace/QTworkspace/project1/autoMattingv1_0/test/";
+    QString fileName = QString(folerName.c_str()) + mfileName;
+    if (!fileName.isEmpty())
+    {
+        openImage(fileName);
+        mImageArr.reset();
+        mGrabCut.reset();
+        mImageArr = std::auto_ptr<GrabCutNS::Image<GrabCutNS::Color> >(create_image_array_from_QImage(mImages[VM_IMAGE]));
+        mGrabCut = std::auto_ptr<GrabCutNS::GrabCut>(new GrabCutNS::GrabCut(mImageArr.get()));//针对mImageArr生成的mGrabCut
+        //先load照片再利用照片initSystem
+        initSystem();
+
+        mImgView->update();
+        //设置系统名字
+        setWindowTitle( tr("%1 - %2")
+            .arg(strippedName(fileName))//传入文件绝对路径得到“文件名.类型"
+            .arg(WINDOW_TITLE) );
+    }
 }
 
 //触发refineOnce
@@ -519,7 +552,16 @@ void MainWindow::triggerrefineOnce(){
     }else if(mInitialized == false){
         //  此处添加自动抠图！！！
         cout<<"circle the rect init"<<endl;
-        int s_x=39,s_y=30,e_x=579,e_y=618;
+        int s_x,s_y,e_x,e_y;
+        if(mfileName == QString("woman"))
+        {
+            s_x=6,s_y=5,e_x=589,e_y=606;
+        }else if(mfileName == QString("man")){
+            s_x=69,s_y=6,e_x=566,e_y=455;
+        }else{
+            s_x=39,s_y=30,e_x=579,e_y=618;
+        }
+
         mGrabCut->initialize(s_x, s_y, e_x, e_y);
         mGrabCut->fitGMMs();
         mSelectionMode = SM_NONE;
@@ -538,8 +580,16 @@ void MainWindow::triggerrefineOnce(){
 //打开相册
 void MainWindow::openGallery()
 {
-    cout<<"openGallery()"<<endl;
-    GalleryWindow *g = new GalleryWindow();
+
+    if(mfileName.isEmpty())
+        return;
+
+    string folerName = "/Users/Zoking/Documents/WorkSpace/QTworkspace/project1/autoMattingv1_0/res/";
+    QString fileName1 = QString(folerName.c_str()) + mfileName;
+    fileName1 += ".png";
+    saveAsImageFile(fileName1);
+    cout<<"openGallery()"<<fileName1.toStdString().data()<<endl;
+    GalleryWindow *g = new GalleryWindow(fileName1,nullptr);
     g->show();
     g->resize(800,600);
     this->update();
