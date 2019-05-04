@@ -19,26 +19,20 @@ NO WARRANTY, express or implied, for this software!
 4. 优化图片合成部分的功能
 
 ### 实验效果
-<div style="width: 300px; margin: auto">
-![输入原始图片](https://raw.githubusercontent.com/zhongqin0820/zhongqin0820.github.io/source-articles/source/images/%E5%9B%BE%E7%89%87%203.jpg)
-</div>
 
-<div style="width: 300px; margin: auto">
-![GMM计算结果](https://raw.githubusercontent.com/zhongqin0820/zhongqin0820.github.io/source-articles/source/images/%E5%9B%BE%E7%89%87%204.jpg)
-</div>
+![输入原始图片](https://raw.githubusercontent.com/zhongqin0820/GrabcutQt/master/res/%E5%9B%BE%E7%89%87%203.jpg)
 
-<div style="width: 300px; margin: auto">
-![掩膜计算结果](https://raw.githubusercontent.com/zhongqin0820/zhongqin0820.github.io/source-articles/source/images/%E5%9B%BE%E7%89%87%205.jpg)
-</div>
 
-<div style="width: 300px; margin: auto">
-![效果对比](https://raw.githubusercontent.com/zhongqin0820/zhongqin0820.github.io/source-articles/source/images/%E5%9B%BE%E7%89%87%201.png)
-</div>
+![GMM计算结果](https://raw.githubusercontent.com/zhongqin0820/GrabcutQt/master/res/%E5%9B%BE%E7%89%87%204.jpg)
 
-<div style="width: 300px; margin: auto">
-![相册浏览、选中、合成](https://raw.githubusercontent.com/zhongqin0820/zhongqin0820.github.io/source-articles/source/images/%E5%9B%BE%E7%89%87%202.png)
-</div>
 
-<div style="width: 300px; margin: auto">
-![总的系统演示](https://raw.githubusercontent.com/zhongqin0820/zhongqin0820.github.io/source-articles/source/images/Jietu20170919-180439-HD.gif)
-</div>
+![掩膜计算结果](https://raw.githubusercontent.com/zhongqin0820/GrabcutQt/master/res/%E5%9B%BE%E7%89%87%205.jpg)
+
+
+![效果对比](https://raw.githubusercontent.com/zhongqin0820/GrabcutQt/master/res/%E5%9B%BE%E7%89%87%201.png)
+
+
+![相册浏览、选中、合成](https://raw.githubusercontent.com/zhongqin0820/GrabcutQt/master/res/%E5%9B%BE%E7%89%87%202.png)
+
+
+![总的系统演示](https://raw.githubusercontent.com/zhongqin0820/GrabcutQt/master/res/Jietu20170919-180439-HD.gif)
